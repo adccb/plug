@@ -1,47 +1,32 @@
 require 'json'
 
+require_relative 'fs_shim.rb'
+
 class Recorder
   attr_accessor :record
-
   def initialize
-    _create_storage_if_not_exists!
-    @record = JSON.parse File.read(@file), :symbolize_names => true
+    @shim = Shim.new
+    @record = @shim.read 
   end
 
-  def add_joint strain
+  def add_joint strain, number
     record = @record[strain]
     if record.nil?
-      @record[strain] = { :strain => strain, :quantity => 1 }
+      @record[strain] = { :strain => strain, :quantity => number }
     else
-      record[:quantity] += 1
-    end
-  
-    write! JSON.generate(@record)
-  end
-
-  def remove_joint strain
-    if not @record[strain]
-      puts "looks like we don\'t have anything for #{strain}. did you mistype?"
-      exit!
+      record[:quantity] += number
     end
 
-    @record[strain][:quantity] -= 1
-    write! JSON.generate(@record)
+    @shim.write! @record
   end
 
-  private
-  def _create_storage_if_not_exists!
-    @dir = "#{Dir.home}/.plug"
-    @file = "#{@dir}/manifest.json"
-
-    Dir.mkdir @dir if not File.exist? @dir
-    if not File.exist? @file
-      f = File.open @file, 'w'
-      f.write '{}'
+  def remove_joint strain, number
+    record = @record[strain]
+    if record.nil?
+      puts "looks like we don\'t have anything for #{strain}. did you mistype?"; exit!
+    else
+      record[:quantity] -= number
     end
-  end
-
-  def write! json
-    File.open @file, 'w' do |f| f.write json end
+    @shim.write! @record
   end
 end
