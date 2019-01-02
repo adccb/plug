@@ -9,11 +9,15 @@ this is how i track what medicine i have on hand right now. you can use this to 
 `plug -i` will show you your `inventory` and the number of doses you have available.
 
 required options:
+
 `-s STRAIN, --strain=STRAIN`: specify what strain you're talking about.
+
 `-q QUANTITY, --quantity=QUANTITY`: specify the number of doses to add or subtract
 
 also required: one of the following.
+
 `-r, --roll`: add to your total (as in, "rolling a joint")
+
 `-s, --smoke`: subtract from your total
 
 and there you have it!
