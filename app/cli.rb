@@ -9,33 +9,48 @@ options = {}
 OptionParser.new { |opts|
   opts.banner = 'usage: plug [options]'
 
-  opts.on '-r', '--roll' do |r|
+  opts.on '-r', '--roll', 'roll a joint' do |r|
     options[:roll] = r
   end
 
-  opts.on '-s', '--smoke' do |s|
+  opts.on '-s', '--smoke', 'smoke a joint' do |s|
     options[:smoke] = s
+  end
+
+  opts.on '-S STRAIN', '--strain=STRAIN', 'a strain' do |s|
+    options[:strain] = s
+  end
+
+  opts.on '-q QUANTITY', '--quantity=QUANTITY', 'a quantity' do |q|
+    begin
+      options[:quantity] = Integer(q)
+    rescue ArgumentError
+      options[:quantity] = 1
+    end
+  end
+
+  opts.on '-i', '--inventory', 'take inventory' do |i|
+    options[:inventory] = i
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
   end
 }.parse!
 
 controller = Controller.new
-if(options[:roll])
-  strain, family, number = ARGV
+if options[:inventory]
+  data = controller.hunt.values
+    .select { |i| i[:quantity] > 0 }
+    .sort { |a, b| b[:quantity] <=> a[:quantity] }
+    .map { |r| [r[:strain], r[:quantity]] }
 
-  begin
-    number = Integer(number)
-  rescue ArgumentError
-    puts 'usage:'
-    puts '  plug [-r, --roll] strain (sativa|indica|hybrid) quantity'
-    exit!
-  end
-
-  controller.roll strain, family, number
-elsif options[:smoke]
-  strain = ARGV[0]
-  controller.smoke strain
-else
-  data = controller.hunt.values.map {|r| [r[:strain], r[:family], r[:quantity]]}
-  table = TTY::Table.new header: ['strain', 'family', 'quantity'], rows: data
+  table = TTY::Table.new header: ['strain', 'quantity'], rows: data
   puts table.render(:unicode)
+elsif options[:roll]
+  number = Integer(number) rescue ArgumentError
+  controller.roll options[:strain], options[:quantity]
+elsif options[:smoke]
+  controller.smoke options[:strain], options[:quantity]
 end

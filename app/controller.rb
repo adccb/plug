@@ -5,15 +5,15 @@ class Controller
     @records = Recorder.new
   end
 
-  def roll strain, family, number
-    number.times { @records.add_joint(strain.to_sym, family) }
+  def roll strain, number
+    number.times { @records.add_joint(strain.to_sym) }
   end
 
-  def smoke strain
-    @records.remove_joint(strain.to_sym)
+  def smoke strain, number
+    number.times { @records.remove_joint(strain.to_sym) }
   end
   
   def hunt
-    @records.take_inventory
+    @records.record
   end
 end

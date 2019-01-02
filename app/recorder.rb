@@ -1,23 +1,19 @@
 require 'json'
 
 class Recorder
+  attr_accessor :record
+
   def initialize
     _create_storage_if_not_exists!
     @record = JSON.parse File.read(@file), :symbolize_names => true
   end
 
-  def take_inventory
-    @record
-  end
-
-  def add_joint strain, family
+  def add_joint strain
     record = @record[strain]
-    puts record
-
-    if not record.nil?
-      record[:quantity] += 1
+    if record.nil?
+      @record[strain] = { :strain => strain, :quantity => 1 }
     else
-      @record[strain] = { :strain => strain, :family => family, :quantity => 1 }
+      record[:quantity] += 1
     end
   
     write! JSON.generate(@record)
@@ -30,7 +26,6 @@ class Recorder
     end
 
     @record[strain][:quantity] -= 1
-
     write! JSON.generate(@record)
   end
 
@@ -40,7 +35,6 @@ class Recorder
     @file = "#{@dir}/manifest.json"
 
     Dir.mkdir @dir if not File.exist? @dir
-
     if not File.exist? @file
       f = File.open @file, 'w'
       f.write '{}'
